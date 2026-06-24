@@ -194,6 +194,34 @@
       <button class="primary" onclick="useManualLocation()">この位置で判定する</button>
     </div>
 
+ <button class="secondary" onclick="toggleAddShelterBox()">避難所を新しく追加する</button>
+
+    <div id="addShelterBox" style="display: none; background: white; padding: 14px; border-radius: 14px; margin: 14px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.10);">
+      <div class="small" style="margin-bottom: 10px;">
+        あらかじめ調べてある避難所の情報を入力してください。ブラウザに保存され、次回からも自動で読み込まれます。
+      </div>
+      <div>
+        <label for="newShelterName">避難所の名前</label>
+        <input id="newShelterName" type="text" placeholder="例：〇〇集会所">
+      </div>
+      <div>
+        <label for="newShelterPlace">避難場所の詳細・条件</label>
+        <input id="newShelterPlace" type="text" placeholder="例：3階以上、高台など">
+      </div>
+      <div class="row">
+        <div>
+          <label for="newShelterLat">緯度</label>
+          <input id="newShelterLat" type="number" inputmode="decimal" step="0.000001" placeholder="例：34.0658">
+        </div>
+        <div>
+          <label for="newShelterLon">経度</label>
+          <input id="newShelterLon" type="number" inputmode="decimal" step="0.000001" placeholder="例：134.5593">
+        </div>
+      </div>
+      <button class="primary" onclick="addNewShelter()">この避難所を登録する</button>
+    </div>
+    ```
+    
     <div id="result"></div>
     <div id="map"></div>
   </main>
