@@ -258,7 +258,6 @@
  
 
     let map = null;
-    let shelters = []; 
 
 window.addEventListener("DOMContentLoaded", function() {
     // 1. 豆知識を表示
@@ -286,6 +285,13 @@ function showRandomTrivia() {
 window.addEventListener("DOMContentLoaded", function() {
       const savedShelters = JSON.parse(localStorage.getItem('customShelters')) || [];
       shelters = shelters.concat(savedShelters);
+    });
+     const notice = document.getElementById("secureNotice");
+      if (location.protocol !== "https:" && location.hostname !== "localhost" && location.protocol !== "file:") {
+        notice.innerHTML = "<br>※GPSを使うには、httpsで始まるURLで公開して開く必要があります。";
+      } else if (location.protocol === "file:") {
+        notice.innerHTML = "<br>※スマホでGPSを使うには、HTMLファイルを直接開くより、GitHub Pagesなどでhttps公開して開くのがおすすめです。";
+      }
     });
 
     // 追加フォームの表示・非表示を切り替える関数
@@ -344,16 +350,7 @@ window.addEventListener("DOMContentLoaded", function() {
     let markerLayer = null;
     let routeLayer = null;
 
-    let shelters = [];
 
-    window.addEventListener("load", function() {
-      const notice = document.getElementById("secureNotice");
-      if (location.protocol !== "https:" && location.hostname !== "localhost" && location.protocol !== "file:") {
-        notice.innerHTML = "<br>※GPSを使うには、httpsで始まるURLで公開して開く必要があります。";
-      } else if (location.protocol === "file:") {
-        notice.innerHTML = "<br>※スマホでGPSを使うには、HTMLファイルを直接開くより、GitHub Pagesなどでhttps公開して開くのがおすすめです。";
-      }
-    });
 
     function getGPSLocation() {
       const result = document.getElementById("result");
