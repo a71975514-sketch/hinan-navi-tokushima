@@ -167,6 +167,15 @@
       Android：Chromeで開く → メニュー → 「ホーム画面に追加」または「アプリをインストール」
     </div>
 
+    <!-- 変更箇所: 豆知識ボックスを追加 -->
+    <div id="triviaBox" class="card notice">
+      <div style="margin-bottom: 8px;">
+        <span style="font-size: 24px;">💡</span>
+        <strong style="font-size: 1.1em;">知っておきたい防災豆知識</strong>
+      </div>
+      <div id="triviaText" style="font-size: 0.9em; color: var(--muted);">読み込み中...</div>
+    </div>
+    
     <div class="card notice">
       <strong>スマホ用に使いやすくした版です。</strong><br>
       GPSで現在地を取得し、徳島市内の避難場所候補から近い場所を表示します。<br>
@@ -249,7 +258,24 @@
  
 
     let map = null;
-    
+    let shelters = []; // shelters変数の定義をここに移動
+
+    window.addEventListener("DOMContentLoaded", function() {
+      const savedShelters = JSON.parse(localStorage.getItem('customShelters')) || [];
+      shelters = shelters.concat(savedShelters);
+      showRandomTrivia(); // 変更箇所: 初期化時に豆知識を表示
+    });
+
+    // 変更箇所: 豆知識を表示する関数を追加
+    function showRandomTrivia() {
+      const trivia = [
+        "津波が来たら、迷わず高いところへ逃げてください。",
+        "避難場所は、あらかじめ複数候補を決めておくと安心です。",
+        "非常用持出袋には、水・食料・懐中電灯・ラジオを入れましょう。",
+        "津波は一度だけでなく、何度も押し寄せることがあります。"
+      ];
+      document.getElementById("triviaText").textContent = trivia[Math.floor(Math.random() * trivia.length)];
+    }
 
 
 window.addEventListener("DOMContentLoaded", function() {
