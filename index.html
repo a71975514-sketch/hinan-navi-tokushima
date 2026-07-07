@@ -258,26 +258,31 @@
  
 
     let map = null;
-    let shelters = []; // shelters変数の定義をここに移動
+    let shelters = []; 
 
-    window.addEventListener("DOMContentLoaded", function() {
-      const savedShelters = JSON.parse(localStorage.getItem('customShelters')) || [];
-      shelters = shelters.concat(savedShelters);
-      showRandomTrivia(); // 変更箇所: 初期化時に豆知識を表示
-    });
+window.addEventListener("DOMContentLoaded", function() {
+    // 1. 豆知識を表示
+    showRandomTrivia();
+    
+    // 2. 避難所の読み込み
+    const savedShelters = JSON.parse(localStorage.getItem('customShelters')) || [];
+    shelters = shelters.concat(savedShelters);
+});
 
-    // 変更箇所: 豆知識を表示する関数を追加
-    function showRandomTrivia() {
-      const trivia = [
+// 豆知識を表示する関数（今のままでOK）
+function showRandomTrivia() {
+    const trivia = [
         "津波が来たら、迷わず高いところへ逃げてください。",
         "避難場所は、あらかじめ複数候補を決めておくと安心です。",
         "非常用持出袋には、水・食料・懐中電灯・ラジオを入れましょう。",
         "津波は一度だけでなく、何度も押し寄せることがあります。"
-      ];
-      document.getElementById("triviaText").textContent = trivia[Math.floor(Math.random() * trivia.length)];
+    ];
+    const el = document.getElementById("triviaText");
+    if(el) {
+        el.textContent = trivia[Math.floor(Math.random() * trivia.length)];
     }
-
-
+}
+    
 window.addEventListener("DOMContentLoaded", function() {
       const savedShelters = JSON.parse(localStorage.getItem('customShelters')) || [];
       shelters = shelters.concat(savedShelters);
