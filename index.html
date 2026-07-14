@@ -685,7 +685,9 @@ function updateShelterMenu() {
       currentSaved.forEach(function(shelter, index) {
         html += `
           <li style="display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; border-bottom: 1px solid #eee; font-size: 16px;">
-            <span style="font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 70%;">${shelter.name}</span>
+            <a href="javascript:void(0);" onclick="showSingleShelterOnMap(${index})" style="font-weight: bold; color: var(--primary); text-decoration: underline; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 70%; text-align: left; min-height: auto; width: auto; margin: 0; font-size: 16px; display: inline;">
+              ${shelter.name}
+            </a>
             <button onclick="deleteShelter(${index})" style="background: #ff4d4d; color: white; border: none; padding: 5px 15px; border-radius: 8px; font-size: 14px; cursor: pointer; min-height: 40px; width: auto; margin: 0;">削除</button>
           </li>
         `;
@@ -715,6 +717,59 @@ function updateShelterMenu() {
         updateShelterMenu();
         alert("削除しました。");
       }
+    }
+
+function showSingleShelterOnMap(index) {
+      const currentSaved = JSON.parse(localStorage.getItem('customShelters')) || [];
+      if (index < 0 || index >= currentSaved.length) return;
+
+      const shelter = currentSaved[index];
+
+      // 結果表示エリアに「確認中の避難所情報」とGoogleマップリンクを出す
+      const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${shelter.lat},${shelter.lon}`;
+      const result = document.getElementById("result");
+      result.innerHTML = `
+        <div class="card notice">
+          <strong>📌 登録位置の確認：${shelter.name}</strong><br>
+          避難場所：${shelter.place}<br>
+          緯度: ${shelter.lat} / 経度: ${shelter.lon}<br>
+          <a class="map-link primary" href="${googleMapsUrl}" target="_blank" rel="noopener">Googleマップで場所を見る</a>
+        </div>
+      `;
+
+      // 地図エリアを表示する
+      const mapDiv = document.getElementById("map");
+      mapDiv.style.display = "block";
+
+      if (typeof L === "undefined") {
+        mapDiv.innerHTML = "<div class='card danger'>地図ライブラリを読み込めませんでした。</div>";
+        return;
+      }
+
+      // 地図がまだ作られていなければ、避難所の位置を中心に作成
+      if (!map) {
+        map = L.map("map", { tap: true }).setView([shelter.lat, shelter.lon], 16);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          attribution: "© OpenStreetMap contributors"
+        }).addTo(map);
+      } else {
+        // すでに地図があれば、その避難所の位置へスムーズに移動
+        map.setView([shelter.lat, shelter.lon], 16);
+      }
+
+      // 画面の崩れ防止
+      setTimeout(function() { map.invalidateSize(); }, 250);
+
+      // 古いピンを消して、新しい避難所のピンを1本だけ立てる
+      if (markerLayer) markerLayer.clearLayers();
+      if (routeLayer) routeLayer.remove();
+      
+      markerLayer = L.layerGroup().addTo(map);
+      L.marker([shelter.lat, shelter.lon]).addTo(markerLayer).bindPopup(`避難先：${shelter.name}`).openPopup();
+
+      // 地図が見える位置まで自動スクロール
+      mapDiv.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
     
   </script>
