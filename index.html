@@ -239,6 +239,14 @@ margin: 0;
       <button class="primary" onclick="addNewShelter()">この避難所を登録する</button>
     </div>
 
+　　　<div class="card notice" style="background: white;">
+      <strong style="font-weight: bold;">📋 登録した避難所の確認・削除</strong><br>
+      <div class="small" style="margin-bottom: 10px;">自分が追加した避難所の一覧です。不要なものは削除できます。</div>
+      <div id="customShelterMenu" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 8px; border-radius: 10px; background: #fafafa; margin-bottom: 10px;">
+        <p style="font-size: 16px; color: #999; text-align: center; margin: 10px 0;">登録された避難所はありません</p>
+      </div>
+    </div>
+    
     <div class="card notice" style="background: white;">
       <strong>避難所データの共有・引き継ぎ</strong><br>
       <button class="secondary" onclick="exportShelters()" style="min-height: 44px; font-size: 16px; padding: 10px; margin: 5px 0;">🎁 自分が登録した避難所をコピー（LINE共有用）</button>
@@ -292,23 +300,7 @@ margin: 0;
     const DETOUR_FACTOR = 1.4;
 
     // ベースとなる避難所データの初期定義
-    let shelters = [
-      { name: "徳島市立内町小学校", place: "校舎上階など", lat: 34.0710, lon: 134.5537 },
-      { name: "徳島市立新町小学校", place: "校舎上階など", lat: 34.0664, lon: 134.5427 },
-      { name: "徳島市立富田小学校", place: "校舎上階など", lat: 34.0613, lon: 134.5551 },
-      { name: "徳島市立昭和小学校", place: "校舎上階など", lat: 34.0561, lon: 134.5639 },
-      { name: "徳島市立福島小学校", place: "校舎上階など", lat: 34.0664, lon: 134.5761 },
-      { name: "徳島市立城東小学校", place: "校舎上階など", lat: 34.0684, lon: 134.5847 },
-      { name: "徳島市立助任小学校", place: "校舎上階など", lat: 34.0820, lon: 134.5610 },
-      { name: "徳島市立佐古小学校", place: "校舎上階など", lat: 34.0755, lon: 134.5380 },
-      { name: "徳島市立千松小学校", place: "校舎上階など", lat: 34.0827, lon: 134.5407 },
-      { name: "徳島市立加茂名小学校", place: "校舎上階など", lat: 34.0715, lon: 134.5190 },
-      { name: "徳島市立沖洲小学校", place: "校舎上階など", lat: 34.0740, lon: 134.5990 },
-      { name: "徳島市立津田小学校", place: "校舎上階など", lat: 34.0430, lon: 134.5850 },
-      { name: "徳島市立体育館（とくぎんトモニアリーナ）", place: "公共施設", lat: 34.0746, lon: 134.5525 },
-      { name: "徳島県庁", place: "公共施設", lat: 34.0659, lon: 134.5593 },
-      { name: "アスティとくしま", place: "公共施設", lat: 34.0526, lon: 134.5710 }
-    ];
+    let shelters = [];
 
     let map = null;
     let markerLayer = null;
@@ -316,6 +308,8 @@ margin: 0;
 
     // 画面ロード時の初期化処理
     window.addEventListener("load", function() {
+
+      updateShelterMenu();
       // 1. 豆知識を表示
       showRandomTrivia();
       
@@ -675,6 +669,54 @@ margin: 0;
         alert("データの取り込みに失敗しました。");
       }
     }
+
+function updateShelterMenu() {
+      const menuContainer = document.getElementById("customShelterMenu");
+      if (!menuContainer) return;
+
+      const currentSaved = JSON.parse(localStorage.getItem('customShelters')) || [];
+
+      if (currentSaved.length === 0) {
+        menuContainer.innerHTML = '<p style="font-size: 16px; color: #999; text-align: center; margin: 10px 0;">登録された避難所はありません</p>';
+        return;
+      }
+
+      let html = '<ul style="list-style: none; padding: 0; margin: 0;">';
+      currentSaved.forEach(function(shelter, index) {
+        html += `
+          <li style="display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; border-bottom: 1px solid #eee; font-size: 16px;">
+            <span style="font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 70%;">${shelter.name}</span>
+            <button onclick="deleteShelter(${index})" style="background: #ff4d4d; color: white; border: none; padding: 5px 15px; border-radius: 8px; font-size: 14px; cursor: pointer; min-height: 40px; width: auto; margin: 0;">削除</button>
+          </li>
+        `;
+      });
+      html += '</ul>';
+      menuContainer.innerHTML = html;
+    }
+
+    // 登録した避難所を削除する（新規追加）
+    function deleteShelter(index) {
+      let currentSaved = JSON.parse(localStorage.getItem('customShelters')) || [];
+      if (index < 0 || index >= currentSaved.length) return;
+
+      const deletedName = currentSaved[index].name;
+
+      if (confirm(`「${deletedName}」を削除してもよろしいですか？`)) {
+        currentSaved.splice(index, 1);
+        localStorage.setItem('customShelters', JSON.stringify(currentSaved));
+
+        for (let i = 0; i < shelters.length; i++) {
+          if (shelters[i].name === deletedName) {
+            shelters.splice(i, 1);
+            break;
+          }
+        }
+
+        updateShelterMenu();
+        alert("削除しました。");
+      }
+    }
+    
   </script>
 </body>
 </html>
