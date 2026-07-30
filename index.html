@@ -22,15 +22,20 @@
       --safe: #16a34a;
       --warning: #f59e0b;
       --danger: #dc2626;
+      
+      /* 文字サイズ制御用の倍率（JavaScriptで変更可能） */
+      --font-scale: 1;
     }
 
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
-font-family: "Yu Gothic", "Hiragino Sans", sans-serif;
-color: var(--text);
--webkit-text-size-adjust: 100%;
+      font-family: "Yu Gothic", "Hiragino Sans", sans-serif;
+      color: var(--text);
+      background-color: var(--bg);
+      -webkit-text-size-adjust: 100%;
+      font-size: calc(16px * var(--font-scale));
     }
 
     header {
@@ -44,10 +49,42 @@ color: var(--text);
     }
 
     h1 {
-      font-size: clamp(30px, 8vw, 42px);
-font-weight: bold;
-line-height: 1.5;
-margin: 0;
+      font-size: calc(clamp(24px, 7vw, 36px) * var(--font-scale));
+      font-weight: bold;
+      line-height: 1.3;
+      margin: 0;
+    }
+
+    /* 文字サイズ変更バー */
+    .font-size-bar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      background: #1e293b;
+      padding: 8px;
+      color: white;
+      font-size: 14px;
+    }
+
+    .font-size-btn {
+      background: #334155;
+      color: white;
+      border: 1px solid #475569;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      min-height: auto !important;
+      width: auto !important;
+      margin: 0 !important;
+      font-weight: normal !important;
+    }
+
+    .font-size-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      font-weight: bold !important;
     }
 
     main {
@@ -59,8 +96,8 @@ margin: 0;
 
     button, a.map-link {
       width: 100%;
-      min-height: 90px;
-      font-size: clamp(24px, 6vw, 32px);
+      min-height: calc(80px * var(--font-scale));
+      font-size: calc(clamp(20px, 5.5vw, 28px) * var(--font-scale));
       padding: 16px;
       border: none;
       border-radius: 14px;
@@ -84,7 +121,7 @@ margin: 0;
       margin: 14px 0;
       border-radius: 14px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-      font-size: clamp(17px, 4.6vw, 21px);
+      font-size: calc(clamp(16px, 4.2vw, 20px) * var(--font-scale));
       line-height: 1.55;
       overflow-wrap: anywhere;
     }
@@ -94,7 +131,7 @@ margin: 0;
     .danger { border-left: 12px solid var(--danger); }
 
     .small {
-      font-size: clamp(14px, 3.8vw, 16px);
+      font-size: calc(clamp(13px, 3.5vw, 15px) * var(--font-scale));
       color: var(--muted);
       line-height: 1.55;
     }
@@ -126,12 +163,12 @@ margin: 0;
       display: block;
       font-weight: bold;
       margin-top: 10px;
-      font-size: clamp(17px, 4.5vw, 20px);
+      font-size: calc(clamp(16px, 4vw, 19px) * var(--font-scale));
     }
 
     input {
       width: 100%;
-      font-size: clamp(18px, 5vw, 22px);
+      font-size: calc(clamp(16px, 4.5vw, 20px) * var(--font-scale));
       padding: 12px;
       border-radius: 10px;
       border: 1px solid #9ca3af;
@@ -143,6 +180,17 @@ margin: 0;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
     }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: calc(12px * var(--font-scale));
+      font-weight: bold;
+      margin-top: 4px;
+    }
+    .status-online { background: #dcfce7; color: #15803d; }
+    .status-offline { background: #fee2e2; color: #b91c1c; }
 
     @media (max-width: 520px) {
       main { padding: 10px; }
@@ -160,11 +208,26 @@ margin: 0;
     <h1>らくらく津波避難ナビ<br>徳島市版</h1>
   </header>
 
+  <!-- 文字サイズ変更コントロールバー -->
+  <div class="font-size-bar">
+    <span>文字サイズ:</span>
+    <button class="font-size-btn" id="btn-font-normal" onclick="setFontScale(1, 'btn-font-normal')">標準</button>
+    <button class="font-size-btn" id="btn-font-large" onclick="setFontScale(1.18, 'btn-font-large')">大</button>
+    <button class="font-size-btn" id="btn-font-xlarge" onclick="setFontScale(1.35, 'btn-font-xlarge')">特大</button>
+  </div>
+
   <main>
     <div class="card small">
       <strong>スマホでアプリのように使う方法</strong><br>
       iPhone：Safariで開く → 共有ボタン → 「ホーム画面に追加」<br>
       Android：Chromeで開く → メニュー → 「ホーム画面に追加」または「アプリをインストール」
+    </div>
+
+    <!-- リアルタイムEEW受信状態カード -->
+    <div class="card notice">
+      <strong>📡 リアルタイム緊急地震速報（EEW）監視</strong><br>
+      <span class="small">気象庁の速報データをWebSocketで常時受信しています。徳島県内で警報・予報が発行されると自動で通知します。</span><br>
+      <div id="eewStatus" class="status-badge status-offline">接続中...</div>
     </div>
 
     <div id="triviaBox" class="card notice">
@@ -239,7 +302,7 @@ margin: 0;
       <button class="primary" onclick="addNewShelter()">この避難所を登録する</button>
     </div>
 
-　　　<div class="card notice" style="background: white;">
+    <div class="card notice" style="background: white;">
       <strong style="font-weight: bold;">📋 登録した避難所の確認・削除</strong><br>
       <div class="small" style="margin-bottom: 10px;">自分が追加した避難所の一覧です。不要なものは削除できます。</div>
       <div id="customShelterMenu" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 8px; border-radius: 10px; background: #fafafa; margin-bottom: 10px;">
@@ -263,7 +326,99 @@ margin: 0;
   </main>
 
   <script>
-    // 緊急地震速報シミュレーション用関数
+    /* ----------------------------------------------------
+       文字サイズ変更機能
+    ---------------------------------------------------- */
+    function setFontScale(scale, btnId) {
+      document.documentElement.style.setProperty('--font-scale', scale);
+      localStorage.setItem('userFontScale', scale);
+      localStorage.setItem('userFontBtn', btnId);
+
+      document.querySelectorAll('.font-size-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById(btnId);
+      if (activeBtn) activeBtn.classList.add('active');
+    }
+
+    function initFontSize() {
+      const savedScale = localStorage.getItem('userFontScale') || 1;
+      const savedBtn = localStorage.getItem('userFontBtn') || 'btn-font-normal';
+      setFontScale(savedScale, savedBtn);
+    }
+
+    /* ----------------------------------------------------
+       リアルタイムEEW受信機能 (Wolfx WebSocket API)
+    ---------------------------------------------------- */
+    let eewSocket = null;
+
+    function connectToEEW() {
+      const statusEl = document.getElementById("eewStatus");
+      
+      try {
+        eewSocket = new WebSocket("wss://ws-api.wolfx.jp/jma_eew");
+
+        eewSocket.onopen = function() {
+          if (statusEl) {
+            statusEl.textContent = "🟢 常時監視中（受信準備OK）";
+            statusEl.className = "status-badge status-online";
+          }
+        };
+
+        eewSocket.onmessage = function(event) {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === "jma_eew") {
+              handleEEWData(data);
+            }
+          } catch (e) {
+            console.error("EEW JSON Parse Error:", e);
+          }
+        };
+
+        eewSocket.onclose = function() {
+          if (statusEl) {
+            statusEl.textContent = "🔴 切断（5秒後に自動再接続）";
+            statusEl.className = "status-badge status-offline";
+          }
+          setTimeout(connectToEEW, 5000);
+        };
+
+        eewSocket.onerror = function() {
+          if (statusEl) {
+            statusEl.textContent = "⚠️ 通信エラー";
+            statusEl.className = "status-badge status-offline";
+          }
+        };
+      } catch (err) {
+        console.error("WebSocket Error:", err);
+      }
+    }
+
+    function handleEEWData(eewData) {
+      const title = eewData.Title || "";
+      const region = eewData.AnnouncedRegion || "";
+
+      // 徳島県が含まれるか、または警報クラスの場合
+      if (region.includes("徳島") || title.includes("警報")) {
+        const hypocenter = eewData.Hypocenter || "不明";
+        const maxInt = eewData.MaxInt || "不明";
+        
+        if (Notification.permission === "granted") {
+          navigator.serviceWorker.ready.then(function(registration) {
+            registration.showNotification(`【${title}】地震速報`, {
+              body: `震源地: ${hypocenter} (最大震度: ${maxInt})\n徳島エリアに影響の可能性があります。タップして避難ナビを起動。`,
+              icon: "icons/icon-192.png",
+              badge: "icons/icon-192.png",
+              vibrate: [500, 200, 500, 200, 500],
+              data: { url: "./index.html?eew=1" }
+            });
+          });
+        }
+      }
+    }
+
+    /* ----------------------------------------------------
+       緊急地震速報シミュレーション（手動起動用）
+    ---------------------------------------------------- */
     function startEEWRun() {
       if (!("Notification" in window)) {
         alert("このブラウザは通知に対応していません。");
@@ -294,38 +449,36 @@ margin: 0;
       });
     }
 
+    /* ----------------------------------------------------
+       避難計算・ロジック
+    ---------------------------------------------------- */
     const TSUNAMI_TIME_MIN = 41;
     const TSUNAMI_HEIGHT_M = 5.2;
     const WALK_SPEED = 0.8;
     const DETOUR_FACTOR = 1.4;
 
-    // ベースとなる避難所データの初期定義
     let shelters = [];
-
     let map = null;
     let markerLayer = null;
     let routeLayer = null;
 
     // 画面ロード時の初期化処理
     window.addEventListener("load", function() {
-
+      initFontSize();
+      connectToEEW();
       updateShelterMenu();
-      // 1. 豆知識を表示
       showRandomTrivia();
       
-      // 2. カスタム避難所の読み込み
       const savedShelters = JSON.parse(localStorage.getItem('customShelters')) || [];
       shelters = shelters.concat(savedShelters);
 
-      // 3. 接続プロトコルの警告表示設定
       const notice = document.getElementById("secureNotice");
       if (location.protocol !== "https:" && location.hostname !== "localhost" && location.protocol !== "file:") {
         notice.innerHTML = "<br>※GPSを使うには、httpsで始まるURLで公開して開く必要があります。";
       } else if (location.protocol === "file:") {
-        notice.innerHTML = "<br>※スマホでGPSを使うには、HTMLファイルを直接開くより、GitHub Pagesなどでhttps公開して開うのがおすすめです。";
+        notice.innerHTML = "<br>※スマホでGPSを使うには、GitHub Pagesなどでhttps公開して開くのがおすすめです。";
       }
 
-      // 4. URLに ?eew=1 が含まれているかチェック（シミュレーション緊急起動）
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('eew') === '1') {
         const result = document.getElementById("result");
@@ -395,6 +548,7 @@ margin: 0;
       document.getElementById("newShelterLat").value = "";
       document.getElementById("newShelterLon").value = "";
       document.getElementById("addShelterBox").style.display = "none";
+      updateShelterMenu();
     }
 
     function getGPSLocation() {
@@ -450,6 +604,11 @@ margin: 0;
     }
 
     function judgeShelters(userLat, userLon, accuracy, source) {
+      if (shelters.length === 0) {
+        document.getElementById("result").innerHTML = "<div class='card warning'>避難所データが登録されていません。上の「避難所を新しく追加する」ボタンから避難所を登録してください。</div>";
+        return;
+      }
+
       const calculated = shelters.map(function(shelter) {
         const straightDistance = calcDistance(userLat, userLon, shelter.lat, shelter.lon);
         const distance = straightDistance * DETOUR_FACTOR;
@@ -457,18 +616,15 @@ margin: 0;
         const marginMin = TSUNAMI_TIME_MIN - walkTimeMin;
 
         let className = "safe";
-     
         let message = "津波到達まで余裕があります。";
         if (marginMin < 0) {
           className = "danger";
-
           message = "間に合わない可能性があります。より近い高い場所を検討してください。";
         } else if (marginMin < 10) {
           className = "warning";
-       
           message = "余裕が少ないため、すぐに避難してください。";
         }
-      return { ...shelter, distance, walkTimeMin, marginMin, className, message };
+        return { ...shelter, distance, walkTimeMin, marginMin, className, message };
       }).sort(function(a, b) { return a.walkTimeMin - b.walkTimeMin; });
 
       const top3 = calculated.slice(0, 3);
@@ -488,7 +644,6 @@ margin: 0;
       `;
 
       top3.forEach(function(shelter, index) {
-        // 【修正完了】タイポおよび不正なURL構造をGoogle公式の徒歩ルート共有用URLに一新
         const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLon}&destination=${shelter.lat},${shelter.lon}&travelmode=walking`;
         html += `
           <div class="card ${shelter.className}">
@@ -582,9 +737,10 @@ margin: 0;
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       return R * c;
     }
-  </script>
 
-  <script>
+    /* ----------------------------------------------------
+       Service Worker 登録
+    ---------------------------------------------------- */
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
         navigator.serviceWorker.register('./sw.js').catch(function(error) {
@@ -593,6 +749,9 @@ margin: 0;
       });
     }
 
+    /* ----------------------------------------------------
+       避難所管理・検索・共有機能
+    ---------------------------------------------------- */
     function searchLocationByName() {
       const name = document.getElementById("newShelterName").value.trim();
       const notice = document.getElementById("searchResultNotice");
@@ -663,6 +822,7 @@ margin: 0;
         });
 
         localStorage.setItem('customShelters', JSON.stringify(currentSaved));
+        updateShelterMenu();
         alert("友達の避難所データを正常に取り込みました！");
         document.getElementById("importData").value = "";
       } catch (e) {
@@ -670,7 +830,7 @@ margin: 0;
       }
     }
 
-function updateShelterMenu() {
+    function updateShelterMenu() {
       const menuContainer = document.getElementById("customShelterMenu");
       if (!menuContainer) return;
 
@@ -696,7 +856,6 @@ function updateShelterMenu() {
       menuContainer.innerHTML = html;
     }
 
-    // 登録した避難所を削除する（新規追加）
     function deleteShelter(index) {
       let currentSaved = JSON.parse(localStorage.getItem('customShelters')) || [];
       if (index < 0 || index >= currentSaved.length) return;
@@ -719,13 +878,12 @@ function updateShelterMenu() {
       }
     }
 
-function showSingleShelterOnMap(index) {
+    function showSingleShelterOnMap(index) {
       const currentSaved = JSON.parse(localStorage.getItem('customShelters')) || [];
       if (index < 0 || index >= currentSaved.length) return;
 
       const shelter = currentSaved[index];
 
-      // 結果表示エリアに「確認中の避難所情報」とGoogleマップリンクを出す
       const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${shelter.lat},${shelter.lon}`;
       const result = document.getElementById("result");
       result.innerHTML = `
@@ -737,7 +895,6 @@ function showSingleShelterOnMap(index) {
         </div>
       `;
 
-      // 地図エリアを表示する
       const mapDiv = document.getElementById("map");
       mapDiv.style.display = "block";
 
@@ -746,7 +903,6 @@ function showSingleShelterOnMap(index) {
         return;
       }
 
-      // 地図がまだ作られていなければ、避難所の位置を中心に作成
       if (!map) {
         map = L.map("map", { tap: true }).setView([shelter.lat, shelter.lon], 16);
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -754,24 +910,19 @@ function showSingleShelterOnMap(index) {
           attribution: "© OpenStreetMap contributors"
         }).addTo(map);
       } else {
-        // すでに地図があれば、その避難所の位置へスムーズに移動
         map.setView([shelter.lat, shelter.lon], 16);
       }
 
-      // 画面の崩れ防止
       setTimeout(function() { map.invalidateSize(); }, 250);
 
-      // 古いピンを消して、新しい避難所のピンを1本だけ立てる
       if (markerLayer) markerLayer.clearLayers();
       if (routeLayer) routeLayer.remove();
       
       markerLayer = L.layerGroup().addTo(map);
       L.marker([shelter.lat, shelter.lon]).addTo(markerLayer).bindPopup(`避難先：${shelter.name}`).openPopup();
 
-      // 地図が見える位置まで自動スクロール
       mapDiv.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
-    
   </script>
 </body>
 </html>
